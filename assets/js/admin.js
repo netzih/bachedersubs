@@ -91,6 +91,96 @@ function setupEventListeners() {
         }
     });
 
+    // Add substitute
+    document.getElementById('addSubstituteBtn').addEventListener('click', function() {
+        showModal('addSubstituteModal');
+    });
+
+    document.getElementById('addSubstituteForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = document.getElementById('substituteName').value;
+        const email = document.getElementById('substituteEmail').value;
+        const password = document.getElementById('substitutePassword').value;
+        const zelleInfo = document.getElementById('substituteZelle').value;
+        const hourlyRate = document.getElementById('substituteRate').value;
+
+        try {
+            const response = await fetch('/api/substitutes.php?action=create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    password,
+                    zelle_info: zelleInfo,
+                    hourly_rate: hourlyRate
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                hideModal('addSubstituteModal');
+                this.reset();
+                loadSubstitutes();
+                alert('Substitute added successfully!');
+            } else {
+                showError('addSubstituteError', data.message);
+            }
+        } catch (error) {
+            showError('addSubstituteError', 'An error occurred');
+        }
+    });
+
+    // Manually log hours (admin)
+    document.getElementById('addTimeEntryBtn').addEventListener('click', function() {
+        loadSubstitutesForEntry();
+        loadTeachersForEntry();
+        showModal('addTimeEntryModal');
+    });
+
+    // Time calculation for admin entry form
+    document.getElementById('entryStartTime').addEventListener('change', calculateAdminEntryHours);
+    document.getElementById('entryEndTime').addEventListener('change', calculateAdminEntryHours);
+
+    document.getElementById('addTimeEntryForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const substituteId = document.getElementById('entrySubstitute').value;
+        const teacherId = document.getElementById('entryTeacher').value;
+        const workDate = document.getElementById('entryDate').value;
+        const startTime = document.getElementById('entryStartTime').value;
+        const endTime = document.getElementById('entryEndTime').value;
+        const notes = document.getElementById('entryNotes').value;
+
+        try {
+            const response = await fetch('/api/time_entries.php?action=admin_create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    substitute_id: substituteId,
+                    teacher_id: teacherId,
+                    work_date: workDate,
+                    start_time: startTime,
+                    end_time: endTime,
+                    notes: notes
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                hideModal('addTimeEntryModal');
+                this.reset();
+                document.getElementById('entryCalculatedHours').textContent = 'Select start and end times';
+                loadTimeEntries();
+                loadStats();
+                alert('Hours logged successfully!');
+            } else {
+                showError('addTimeEntryError', data.message);
+            }
+        } catch (error) {
+            showError('addTimeEntryError', 'An error occurred');
+        }
+    });
+
     // Generate report
     document.getElementById('generateReport').addEventListener('click', generateReport);
 
@@ -491,6 +581,99 @@ function renderReport(entries, startDate, endDate) {
     });
 
     container.innerHTML = html;
+}
+
+async function loadSubstitutesForEntry() {
+    try {
+        const response = await fetch('/api/substitutes.php?action=list');
+        const data = await response.json();
+
+        if (data.success) {
+            const select = document.getElementById('entrySubstitute');
+            select.innerHTML = '<option value="">-- Select Substitute --</option>';
+            data.substitutes.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub.id;
+                option.textContent = sub.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading substitutes:', error);
+    }
+}
+
+async function loadTeachersForEntry() {
+    try {
+        const response = await fetch('/api/teachers.php?action=list');
+        const data = await response.json();
+
+        if (data.success) {
+            const select = document.getElementById('entryTeacher');
+            select.innerHTML = '<option value="">-- Select Teacher --</option>';
+            data.teachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher.id;
+                option.textContent = teacher.name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading teachers:', error);
+    }
+}
+
+function calculateAdminEntryHours() {
+    const startTime = document.getElementById('entryStartTime').value;
+    const endTime = document.getElementById('entryEndTime').value;
+    const display = document.getElementById('entryCalculatedHours');
+
+    if (!startTime || !endTime) {
+        display.textContent = 'Select start and end times';
+        return;
+    }
+
+    // Parse times
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+
+    // Convert to minutes since midnight
+    let startMinutes = startHour * 60 + startMin;
+    let endMinutes = endHour * 60 + endMin;
+
+    // Handle overnight shifts
+    if (endMinutes < startMinutes) {
+        endMinutes += 24 * 60; // Add 24 hours
+    }
+
+    // Calculate difference in minutes
+    const diffMinutes = endMinutes - startMinutes;
+
+    if (diffMinutes <= 0) {
+        display.textContent = 'End time must be after start time';
+        display.style.color = '#dc2626';
+        return;
+    }
+
+    // Convert to hours
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+
+    // Display
+    let text = '';
+    if (hours > 0) {
+        text += `${hours} hour${hours !== 1 ? 's' : ''}`;
+    }
+    if (minutes > 0) {
+        if (hours > 0) text += ' ';
+        text += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    }
+
+    const decimal = (diffMinutes / 60).toFixed(2);
+    text += ` (${decimal} hours)`;
+
+    display.textContent = text;
+    display.style.color = '#0369a1';
 }
 
 // Utility functions

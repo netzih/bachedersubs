@@ -43,6 +43,75 @@ try {
             sendJson(['success' => true, 'substitutes' => $substitutes]);
             break;
 
+        case 'create':
+            // Admin only - create new substitute account
+            if (!$auth->isAdmin()) {
+                sendJson(['success' => false, 'message' => 'Admin access required'], 403);
+            }
+
+            if ($method !== 'POST') {
+                sendJson(['success' => false, 'message' => 'Method not allowed'], 405);
+            }
+
+            $data = getJsonInput();
+            $name = sanitize($data['name'] ?? '');
+            $email = sanitize($data['email'] ?? '');
+            $password = $data['password'] ?? '';
+            $zelleInfo = sanitize($data['zelle_info'] ?? '');
+            $hourlyRate = floatval($data['hourly_rate'] ?? 0);
+
+            // Validate inputs
+            if (empty($name) || empty($email) || empty($password)) {
+                sendJson(['success' => false, 'message' => 'Name, email, and password are required']);
+            }
+
+            if (!isValidEmail($email)) {
+                sendJson(['success' => false, 'message' => 'Invalid email address']);
+            }
+
+            if (strlen($password) < 6) {
+                sendJson(['success' => false, 'message' => 'Password must be at least 6 characters']);
+            }
+
+            if ($hourlyRate < 0) {
+                sendJson(['success' => false, 'message' => 'Hourly rate must be positive']);
+            }
+
+            // Check if email already exists
+            $stmt = $db->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            if ($stmt->fetch()) {
+                sendJson(['success' => false, 'message' => 'Email already registered']);
+            }
+
+            // Hash password
+            $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+
+            // Begin transaction
+            $db->beginTransaction();
+
+            try {
+                // Insert user
+                $stmt = $db->prepare(
+                    "INSERT INTO users (email, password_hash, name, role, zelle_info) VALUES (?, ?, ?, 'substitute', ?)"
+                );
+                $stmt->execute([$email, $passwordHash, $name, $zelleInfo]);
+                $userId = $db->lastInsertId();
+
+                // Create substitute record with hourly rate
+                $stmt = $db->prepare("INSERT INTO substitutes (user_id, hourly_rate) VALUES (?, ?)");
+                $stmt->execute([$userId, $hourlyRate]);
+                $substituteId = $db->lastInsertId();
+
+                $db->commit();
+
+                sendJson(['success' => true, 'id' => $substituteId, 'message' => 'Substitute created successfully']);
+            } catch (Exception $e) {
+                $db->rollBack();
+                sendJson(['success' => false, 'message' => 'Failed to create substitute: ' . $e->getMessage()]);
+            }
+            break;
+
         case 'update_rate':
             // Admin only
             if (!$auth->isAdmin()) {

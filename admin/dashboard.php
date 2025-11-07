@@ -63,6 +63,9 @@ $user = $auth->getCurrentUser();
         <div id="timeEntriesTab" class="tab-content active">
             <div class="section-header">
                 <h2>Time Entries</h2>
+                <button id="addTimeEntryBtn" class="btn btn-primary">Manually Log Hours</button>
+            </div>
+            <div class="section-header">
                 <div class="filters">
                     <input type="date" id="filterStartDate" placeholder="Start Date">
                     <input type="date" id="filterEndDate" placeholder="End Date">
@@ -106,6 +109,7 @@ $user = $auth->getCurrentUser();
         <div id="substitutesTab" class="tab-content">
             <div class="section-header">
                 <h2>Substitutes Management</h2>
+                <button id="addSubstituteBtn" class="btn btn-primary">Add Substitute</button>
             </div>
 
             <div class="table-container">
@@ -201,6 +205,85 @@ $user = $auth->getCurrentUser();
                 </div>
                 <div class="form-error" id="editRateError"></div>
                 <button type="submit" class="btn btn-primary">Save Rate</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Substitute Modal -->
+    <div id="addSubstituteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="addSubstituteModal">&times;</span>
+            <h3>Add Substitute</h3>
+            <form id="addSubstituteForm">
+                <div class="form-group">
+                    <label for="substituteName">Full Name</label>
+                    <input type="text" id="substituteName" required>
+                </div>
+                <div class="form-group">
+                    <label for="substituteEmail">Email</label>
+                    <input type="email" id="substituteEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="substitutePassword">Password</label>
+                    <input type="password" id="substitutePassword" required minlength="6">
+                    <small>Minimum 6 characters</small>
+                </div>
+                <div class="form-group">
+                    <label for="substituteZelle">Zelle Email or Phone</label>
+                    <input type="text" id="substituteZelle">
+                </div>
+                <div class="form-group">
+                    <label for="substituteRate">Hourly Rate ($)</label>
+                    <input type="number" id="substituteRate" step="0.01" min="0" value="0.00" required>
+                </div>
+                <div class="form-error" id="addSubstituteError"></div>
+                <button type="submit" class="btn btn-primary">Add Substitute</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Time Entry Modal (Admin) -->
+    <div id="addTimeEntryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="addTimeEntryModal">&times;</span>
+            <h3>Manually Log Hours</h3>
+            <form id="addTimeEntryForm">
+                <div class="form-group">
+                    <label for="entrySubstitute">Substitute</label>
+                    <select id="entrySubstitute" required>
+                        <option value="">-- Select Substitute --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="entryTeacher">Teacher</label>
+                    <select id="entryTeacher" required>
+                        <option value="">-- Select Teacher --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="entryDate">Date</label>
+                    <input type="date" id="entryDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="entryStartTime">Start Time</label>
+                    <input type="time" id="entryStartTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="entryEndTime">End Time</label>
+                    <input type="time" id="entryEndTime" required>
+                </div>
+                <div class="form-group">
+                    <label>Calculated Hours</label>
+                    <div id="entryCalculatedHours" style="padding: 10px; background: #f0f9ff; border-radius: 6px; font-weight: 500; color: #0369a1;">
+                        Select start and end times
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="entryNotes">Notes (Optional)</label>
+                    <textarea id="entryNotes" rows="3"></textarea>
+                </div>
+                <div class="form-error" id="addTimeEntryError"></div>
+                <button type="submit" class="btn btn-primary">Log Hours</button>
             </form>
         </div>
     </div>
