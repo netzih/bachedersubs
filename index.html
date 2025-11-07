@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bay Area Cheder - Substitute Tracking</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Bay Area Cheder</h1>
+                <h2>Substitute Tracking System</h2>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form">
+                <h3>Login</h3>
+                <form id="loginFormElement">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" name="email" required autofocus>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" name="password" required>
+                    </div>
+                    <div class="form-error" id="loginError"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+                <p class="auth-toggle">
+                    Don't have an account? <a href="#" id="showRegister">Register here</a>
+                </p>
+            </div>
+
+            <!-- Registration Form -->
+            <div id="registerForm" class="auth-form" style="display: none;">
+                <h3>Register as Substitute</h3>
+                <form id="registerFormElement">
+                    <div class="form-group">
+                        <label for="registerName">Full Name</label>
+                        <input type="text" id="registerName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" name="password" required minlength="6">
+                        <small>Minimum 6 characters</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerZelle">Zelle Email or Phone (for payments)</label>
+                        <input type="text" id="registerZelle" name="zelle_info" placeholder="Optional">
+                    </div>
+                    <div class="form-error" id="registerError"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Register</button>
+                </form>
+                <p class="auth-toggle">
+                    Already have an account? <a href="#" id="showLogin">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/auth.js"></script>
+</body>
+</html>
