@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('startTime').addEventListener('change', calculateHours);
     document.getElementById('endTime').addEventListener('change', calculateHours);
 
+    // Calculate initial hours with default values
+    calculateHours();
+
     // Log hours form
     document.getElementById('logHoursForm').addEventListener('submit', async function(e) {
         e.preventDefault();

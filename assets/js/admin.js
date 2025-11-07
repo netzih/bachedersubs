@@ -92,9 +92,15 @@ function setupEventListeners() {
     });
 
     // Add substitute
-    document.getElementById('addSubstituteBtn').addEventListener('click', function() {
-        showModal('addSubstituteModal');
-    });
+    const addSubBtn = document.getElementById('addSubstituteBtn');
+    if (addSubBtn) {
+        addSubBtn.addEventListener('click', function() {
+            console.log('Add substitute button clicked');
+            showModal('addSubstituteModal');
+        });
+    } else {
+        console.error('addSubstituteBtn not found');
+    }
 
     document.getElementById('addSubstituteForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -132,15 +138,27 @@ function setupEventListeners() {
     });
 
     // Manually log hours (admin)
-    document.getElementById('addTimeEntryBtn').addEventListener('click', function() {
-        loadSubstitutesForEntry();
-        loadTeachersForEntry();
-        showModal('addTimeEntryModal');
-    });
+    const addTimeEntryBtn = document.getElementById('addTimeEntryBtn');
+    if (addTimeEntryBtn) {
+        addTimeEntryBtn.addEventListener('click', function() {
+            console.log('Add time entry button clicked');
+            loadSubstitutesForEntry();
+            loadTeachersForEntry();
+            showModal('addTimeEntryModal');
+            // Calculate hours for default times
+            setTimeout(() => calculateAdminEntryHours(), 100);
+        });
+    } else {
+        console.error('addTimeEntryBtn not found');
+    }
 
     // Time calculation for admin entry form
-    document.getElementById('entryStartTime').addEventListener('change', calculateAdminEntryHours);
-    document.getElementById('entryEndTime').addEventListener('change', calculateAdminEntryHours);
+    const entryStartTime = document.getElementById('entryStartTime');
+    const entryEndTime = document.getElementById('entryEndTime');
+    if (entryStartTime && entryEndTime) {
+        entryStartTime.addEventListener('change', calculateAdminEntryHours);
+        entryEndTime.addEventListener('change', calculateAdminEntryHours);
+    }
 
     document.getElementById('addTimeEntryForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -678,7 +696,14 @@ function calculateAdminEntryHours() {
 
 // Utility functions
 function showModal(modalId) {
-    document.getElementById(modalId).classList.add('show');
+    console.log('showModal called with:', modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('show');
+        console.log('Modal shown:', modalId);
+    } else {
+        console.error('Modal not found:', modalId);
+    }
 }
 
 function hideModal(modalId) {

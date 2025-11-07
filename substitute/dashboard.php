@@ -81,11 +81,11 @@ $user = $auth->getCurrentUser();
                     </div>
                     <div class="form-group">
                         <label for="startTime">Start Time</label>
-                        <input type="time" id="startTime" required>
+                        <input type="time" id="startTime" value="08:00" required>
                     </div>
                     <div class="form-group">
                         <label for="endTime">End Time</label>
-                        <input type="time" id="endTime" required>
+                        <input type="time" id="endTime" value="15:00" required>
                     </div>
                     <div class="form-group">
                         <label>Calculated Hours</label>
