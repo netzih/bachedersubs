@@ -31,16 +31,40 @@ try {
             $data = getJsonInput();
             $teacherId = intval($data['teacher_id'] ?? 0);
             $workDate = $data['work_date'] ?? '';
-            $hours = floatval($data['hours'] ?? 0);
+            $startTime = $data['start_time'] ?? '';
+            $endTime = $data['end_time'] ?? '';
             $notes = sanitize($data['notes'] ?? '');
 
             // Validate inputs
-            if ($teacherId <= 0 || empty($workDate) || $hours <= 0) {
+            if ($teacherId <= 0 || empty($workDate) || empty($startTime) || empty($endTime)) {
                 sendJson(['success' => false, 'message' => 'Invalid data']);
             }
 
             if (!isValidDate($workDate)) {
                 sendJson(['success' => false, 'message' => 'Invalid date format']);
+            }
+
+            // Validate time format (HH:MM)
+            if (!preg_match('/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/', $startTime) ||
+                !preg_match('/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/', $endTime)) {
+                sendJson(['success' => false, 'message' => 'Invalid time format. Use HH:MM']);
+            }
+
+            // Calculate hours from start and end time
+            $start = new DateTime($startTime);
+            $end = new DateTime($endTime);
+
+            // If end time is before start time, it means it crosses midnight
+            if ($end < $start) {
+                $end->modify('+1 day');
+            }
+
+            $interval = $start->diff($end);
+            $hours = $interval->h + ($interval->i / 60);
+            $hours = round($hours, 2);
+
+            if ($hours <= 0) {
+                sendJson(['success' => false, 'message' => 'End time must be after start time']);
             }
 
             // Get substitute ID for current user
@@ -57,10 +81,10 @@ try {
 
             // Insert time entry
             $stmt = $db->prepare("
-                INSERT INTO time_entries (substitute_id, teacher_id, work_date, hours, notes)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO time_entries (substitute_id, teacher_id, work_date, start_time, end_time, hours, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt->execute([$substituteId, $teacherId, $workDate, $hours, $notes]);
+            $stmt->execute([$substituteId, $teacherId, $workDate, $startTime, $endTime, $hours, $notes]);
             $entryId = $db->lastInsertId();
 
             sendJson(['success' => true, 'id' => $entryId, 'message' => 'Hours logged successfully']);
@@ -85,6 +109,8 @@ try {
                 SELECT
                     te.id,
                     te.work_date,
+                    te.start_time,
+                    te.end_time,
                     te.hours,
                     te.notes,
                     te.is_paid,

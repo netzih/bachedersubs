@@ -80,8 +80,18 @@ $user = $auth->getCurrentUser();
                         <input type="date" id="workDate" required>
                     </div>
                     <div class="form-group">
-                        <label for="hoursWorked">Hours Worked</label>
-                        <input type="number" id="hoursWorked" step="0.5" min="0.5" required>
+                        <label for="startTime">Start Time</label>
+                        <input type="time" id="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endTime">End Time</label>
+                        <input type="time" id="endTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Calculated Hours</label>
+                        <div id="calculatedHours" style="padding: 10px; background: #f0f9ff; border-radius: 6px; font-weight: 500; color: #0369a1;">
+                            Select start and end times
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="workNotes">Notes (Optional)</label>
@@ -114,6 +124,8 @@ $user = $auth->getCurrentUser();
                         <tr>
                             <th>Date</th>
                             <th>Teacher</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
                             <th>Hours</th>
                             <th>Status</th>
                             <th>Notes</th>

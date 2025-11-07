@@ -86,6 +86,8 @@ $user = $auth->getCurrentUser();
                             <th>Date</th>
                             <th>Substitute</th>
                             <th>Teacher</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
                             <th>Hours</th>
                             <th>Rate</th>
                             <th>Amount</th>

@@ -192,7 +192,7 @@ function renderTimeEntries(entries) {
     tbody.innerHTML = '';
 
     if (entries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No entries found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" style="text-align: center;">No entries found</td></tr>';
         return;
     }
 
@@ -202,6 +202,8 @@ function renderTimeEntries(entries) {
             <td>${formatDate(entry.work_date)}</td>
             <td>${escapeHtml(entry.substitute_name)}</td>
             <td>${escapeHtml(entry.teacher_name)}</td>
+            <td>${formatTime(entry.start_time)}</td>
+            <td>${formatTime(entry.end_time)}</td>
             <td>${entry.hours}</td>
             <td>${formatCurrency(entry.hourly_rate)}</td>
             <td>${formatCurrency(entry.amount)}</td>
@@ -519,4 +521,14 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function formatTime(timeStr) {
+    if (!timeStr) return '-';
+    // Convert 24-hour time to 12-hour format
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
 }

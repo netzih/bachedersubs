@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/index.html';
     });
 
+    // Time calculation on change
+    document.getElementById('startTime').addEventListener('change', calculateHours);
+    document.getElementById('endTime').addEventListener('change', calculateHours);
+
     // Log hours form
     document.getElementById('logHoursForm').addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -29,8 +33,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const teacherId = document.getElementById('teacherSelect').value;
         const workDate = document.getElementById('workDate').value;
-        const hours = document.getElementById('hoursWorked').value;
+        const startTime = document.getElementById('startTime').value;
+        const endTime = document.getElementById('endTime').value;
         const notes = document.getElementById('workNotes').value;
+
+        if (!startTime || !endTime) {
+            showError('logHoursError', 'Please enter both start and end times');
+            return;
+        }
 
         try {
             const response = await fetch('/api/time_entries.php?action=create', {
@@ -39,7 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     teacher_id: teacherId,
                     work_date: workDate,
-                    hours: hours,
+                    start_time: startTime,
+                    end_time: endTime,
                     notes: notes
                 })
             });
@@ -50,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 showSuccess('logHoursSuccess', 'Hours logged successfully!');
                 this.reset();
                 setTodayDate();
+                document.getElementById('calculatedHours').textContent = 'Select start and end times';
                 loadStats();
                 loadMyEntries();
             } else {
@@ -178,7 +190,7 @@ function renderEntries(entries) {
     tbody.innerHTML = '';
 
     if (entries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No entries found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No entries found</td></tr>';
         return;
     }
 
@@ -187,6 +199,8 @@ function renderEntries(entries) {
         row.innerHTML = `
             <td>${formatDate(entry.work_date)}</td>
             <td>${escapeHtml(entry.teacher_name)}</td>
+            <td>${formatTime(entry.start_time)}</td>
+            <td>${formatTime(entry.end_time)}</td>
             <td>${entry.hours}</td>
             <td>
                 <span class="badge ${entry.is_paid ? 'badge-paid' : 'badge-unpaid'}">
@@ -278,4 +292,67 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+function formatTime(timeStr) {
+    if (!timeStr) return '-';
+    // Convert 24-hour time to 12-hour format
+    const [hours, minutes] = timeStr.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+}
+
+function calculateHours() {
+    const startTime = document.getElementById('startTime').value;
+    const endTime = document.getElementById('endTime').value;
+    const display = document.getElementById('calculatedHours');
+
+    if (!startTime || !endTime) {
+        display.textContent = 'Select start and end times';
+        return;
+    }
+
+    // Parse times
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+
+    // Convert to minutes since midnight
+    let startMinutes = startHour * 60 + startMin;
+    let endMinutes = endHour * 60 + endMin;
+
+    // Handle overnight shifts
+    if (endMinutes < startMinutes) {
+        endMinutes += 24 * 60; // Add 24 hours
+    }
+
+    // Calculate difference in minutes
+    const diffMinutes = endMinutes - startMinutes;
+
+    if (diffMinutes <= 0) {
+        display.textContent = 'End time must be after start time';
+        display.style.color = '#dc2626';
+        return;
+    }
+
+    // Convert to hours
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+
+    // Display
+    let text = '';
+    if (hours > 0) {
+        text += `${hours} hour${hours !== 1 ? 's' : ''}`;
+    }
+    if (minutes > 0) {
+        if (hours > 0) text += ' ';
+        text += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    }
+
+    const decimal = (diffMinutes / 60).toFixed(2);
+    text += ` (${decimal} hours)`;
+
+    display.textContent = text;
+    display.style.color = '#0369a1';
 }

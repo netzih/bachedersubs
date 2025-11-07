@@ -43,6 +43,8 @@ CREATE TABLE IF NOT EXISTS time_entries (
     substitute_id INT NOT NULL,
     teacher_id INT NOT NULL,
     work_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
     hours DECIMAL(5, 2) NOT NULL,
     notes TEXT DEFAULT NULL,
     is_paid BOOLEAN DEFAULT FALSE,
