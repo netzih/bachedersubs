@@ -288,6 +288,62 @@ $user = $auth->getCurrentUser();
         </div>
     </div>
 
+    <!-- Substitute Details Modal -->
+    <div id="substituteDetailsModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close" data-modal="substituteDetailsModal">&times;</span>
+            <h3 id="subDetailsName">Substitute Details</h3>
+
+            <div class="details-section">
+                <h4>Contact Information</h4>
+                <p><strong>Email:</strong> <span id="subDetailsEmail">-</span></p>
+                <p><strong>Zelle:</strong> <span id="subDetailsZelle">-</span></p>
+                <p><strong>Hourly Rate:</strong> <span id="subDetailsRate">-</span></p>
+            </div>
+
+            <div class="details-section">
+                <h4>Summary</h4>
+                <div class="details-stats">
+                    <div class="detail-stat">
+                        <span class="label">Total Hours Worked:</span>
+                        <span class="value" id="subDetailsTotalHours">0</span>
+                    </div>
+                    <div class="detail-stat">
+                        <span class="label">Hours Unpaid:</span>
+                        <span class="value" id="subDetailsUnpaidHours">0</span>
+                    </div>
+                    <div class="detail-stat">
+                        <span class="label">Amount Owed:</span>
+                        <span class="value" id="subDetailsOwed">$0.00</span>
+                    </div>
+                    <div class="detail-stat">
+                        <span class="label">Total Paid:</span>
+                        <span class="value" id="subDetailsPaid">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="details-section">
+                <h4>Recent Time Entries</h4>
+                <div class="table-container">
+                    <table id="subDetailsEntriesTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Teacher</th>
+                                <th>Hours</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="subDetailsEntriesBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="../assets/js/admin.js"></script>
 </body>
 </html>

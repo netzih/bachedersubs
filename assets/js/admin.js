@@ -255,7 +255,7 @@ async function loadStats() {
             const stats = data.stats;
             document.getElementById('totalOwed').textContent = formatCurrency(stats.unpaid_amount || 0);
             document.getElementById('unpaidEntries').textContent = stats.unpaid_entries || 0;
-            document.getElementById('unpaidHours').textContent = parseFloat(stats.total_hours || 0).toFixed(1);
+            document.getElementById('unpaidHours').textContent = parseFloat(stats.unpaid_hours || 0).toFixed(1);
 
             // Load substitutes count
             const subResponse = await fetch('/api/substitutes.php?action=list');
@@ -400,7 +400,7 @@ function renderSubstitutes(substitutes) {
     substitutes.forEach(sub => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${escapeHtml(sub.name)}</td>
+            <td><span class="clickable-name" onclick="viewSubstituteDetails(${sub.id})">${escapeHtml(sub.name)}</span></td>
             <td>${escapeHtml(sub.email)}</td>
             <td>${escapeHtml(sub.zelle_info || 'Not provided')}</td>
             <td>${formatCurrency(sub.hourly_rate)}</td>
@@ -692,6 +692,87 @@ function calculateAdminEntryHours() {
 
     display.textContent = text;
     display.style.color = '#0369a1';
+}
+
+async function viewSubstituteDetails(substituteId) {
+    try {
+        // Load substitute basic info
+        const subResponse = await fetch('/api/substitutes.php?action=list');
+        const subData = await subResponse.json();
+
+        if (!subData.success) {
+            alert('Failed to load substitute details');
+            return;
+        }
+
+        const substitute = subData.substitutes.find(s => s.id === substituteId);
+        if (!substitute) {
+            alert('Substitute not found');
+            return;
+        }
+
+        // Load time entries for this substitute
+        const entriesResponse = await fetch(`/api/time_entries.php?action=list`);
+        const entriesData = await entriesResponse.json();
+
+        if (!entriesData.success) {
+            alert('Failed to load time entries');
+            return;
+        }
+
+        // Filter entries for this substitute
+        const substituteEntries = entriesData.entries.filter(e => e.substitute_name === substitute.name);
+
+        // Calculate stats
+        const totalHours = substituteEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+        const unpaidEntries = substituteEntries.filter(e => !e.is_paid);
+        const paidEntries = substituteEntries.filter(e => e.is_paid);
+        const unpaidHours = unpaidEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+        const amountOwed = unpaidEntries.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+        const amountPaid = paidEntries.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+
+        // Populate modal
+        document.getElementById('subDetailsName').textContent = substitute.name;
+        document.getElementById('subDetailsEmail').textContent = substitute.email;
+        document.getElementById('subDetailsZelle').textContent = substitute.zelle_info || 'Not provided';
+        document.getElementById('subDetailsRate').textContent = formatCurrency(substitute.hourly_rate);
+        document.getElementById('subDetailsTotalHours').textContent = totalHours.toFixed(1);
+        document.getElementById('subDetailsUnpaidHours').textContent = unpaidHours.toFixed(1);
+        document.getElementById('subDetailsOwed').textContent = formatCurrency(amountOwed);
+        document.getElementById('subDetailsPaid').textContent = formatCurrency(amountPaid);
+
+        // Populate recent entries table (last 10 entries)
+        const recentEntries = substituteEntries.slice(0, 10);
+        const tbody = document.getElementById('subDetailsEntriesBody');
+        tbody.innerHTML = '';
+
+        if (recentEntries.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No entries found</td></tr>';
+        } else {
+            recentEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(entry.work_date)}</td>
+                    <td>${escapeHtml(entry.teacher_name)}</td>
+                    <td>${entry.hours}</td>
+                    <td>${formatCurrency(entry.amount)}</td>
+                    <td>
+                        <span class="badge ${entry.is_paid ? 'badge-paid' : 'badge-unpaid'}">
+                            ${entry.is_paid ? 'Paid' : 'Unpaid'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Show modal
+        showModal('substituteDetailsModal');
+
+    } catch (error) {
+        console.error('Error loading substitute details:', error);
+        alert('An error occurred while loading substitute details');
+    }
 }
 
 // Utility functions

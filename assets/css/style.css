@@ -503,6 +503,65 @@ table tbody tr:hover {
     border-bottom: none;
 }
 
+/* Substitute Details Modal */
+.details-section {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.details-section:last-child {
+    border-bottom: none;
+}
+
+.details-section h4 {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.details-section p {
+    margin: 8px 0;
+    color: var(--text-secondary);
+}
+
+.details-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.detail-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.detail-stat .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-stat .value {
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+/* Clickable substitute names */
+.clickable-name {
+    color: var(--primary-color);
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.clickable-name:hover {
+    color: var(--primary-dark);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .dashboard-stats {
