@@ -35,6 +35,14 @@ try {
             $endTime = $data['end_time'] ?? '';
             $notes = sanitize($data['notes'] ?? '');
 
+            // Strip seconds if present (convert HH:MM:SS to HH:MM)
+            if (strlen($startTime) > 5) {
+                $startTime = substr($startTime, 0, 5);
+            }
+            if (strlen($endTime) > 5) {
+                $endTime = substr($endTime, 0, 5);
+            }
+
             // Validate inputs
             if ($teacherId <= 0 || empty($workDate) || empty($startTime) || empty($endTime)) {
                 sendJson(['success' => false, 'message' => 'Invalid data']);
@@ -108,6 +116,14 @@ try {
             $endTime = $data['end_time'] ?? '';
             $notes = sanitize($data['notes'] ?? '');
 
+            // Strip seconds if present (convert HH:MM:SS to HH:MM)
+            if (strlen($startTime) > 5) {
+                $startTime = substr($startTime, 0, 5);
+            }
+            if (strlen($endTime) > 5) {
+                $endTime = substr($endTime, 0, 5);
+            }
+
             // Validate inputs
             if ($substituteId <= 0 || $teacherId <= 0 || empty($workDate) || empty($startTime) || empty($endTime)) {
                 sendJson(['success' => false, 'message' => 'All fields are required']);
@@ -175,6 +191,14 @@ try {
             $startTime = $data['start_time'] ?? '';
             $endTime = $data['end_time'] ?? '';
             $notes = sanitize($data['notes'] ?? '');
+
+            // Strip seconds if present (convert HH:MM:SS to HH:MM)
+            if (strlen($startTime) > 5) {
+                $startTime = substr($startTime, 0, 5);
+            }
+            if (strlen($endTime) > 5) {
+                $endTime = substr($endTime, 0, 5);
+            }
 
             // Validate inputs
             if ($entryId <= 0 || $teacherId <= 0 || empty($workDate) || empty($startTime) || empty($endTime)) {

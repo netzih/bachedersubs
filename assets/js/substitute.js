@@ -317,6 +317,10 @@ async function loadProfile() {
 }
 
 async function editEntry(entryId, teacherId, workDate, startTime, endTime, notes) {
+    // Strip seconds from time values if present (HH:MM:SS -> HH:MM)
+    startTime = startTime.substring(0, 5);
+    endTime = endTime.substring(0, 5);
+
     // Populate the edit form
     document.getElementById('editEntryId').value = entryId;
     document.getElementById('editWorkDate').value = workDate;
