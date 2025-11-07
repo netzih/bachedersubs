@@ -14,13 +14,15 @@ $user = $auth->getCurrentUser();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Bay Area Cheder</title>
+    <link rel="icon" type="image/jpeg" href="../assets/images/favicon.jpg">
+    <link rel="apple-touch-icon" href="../assets/images/favicon.jpg">
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">
-                <h1>Bay Area Cheder</h1>
+                <img src="../assets/images/logo.jpeg" alt="Bay Area Cheder Logo" class="logo">
                 <span class="badge badge-admin">Admin</span>
             </div>
             <div class="nav-menu">
