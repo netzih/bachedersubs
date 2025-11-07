@@ -104,6 +104,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Apply filter
     document.getElementById('applyFilter').addEventListener('click', loadMyEntries);
+
+    // Edit time entry form
+    const editStartTime = document.getElementById('editStartTime');
+    const editEndTime = document.getElementById('editEndTime');
+    if (editStartTime && editEndTime) {
+        editStartTime.addEventListener('change', calculateEditHours);
+        editEndTime.addEventListener('change', calculateEditHours);
+    }
+
+    document.getElementById('editTimeEntryForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const entryId = document.getElementById('editEntryId').value;
+        const teacherId = document.getElementById('editTeacherSelect').value;
+        const workDate = document.getElementById('editWorkDate').value;
+        const startTime = document.getElementById('editStartTime').value;
+        const endTime = document.getElementById('editEndTime').value;
+        const notes = document.getElementById('editWorkNotes').value;
+
+        try {
+            const response = await fetch('/api/time_entries.php?action=update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    entry_id: entryId,
+                    teacher_id: teacherId,
+                    work_date: workDate,
+                    start_time: startTime,
+                    end_time: endTime,
+                    notes: notes
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                hideEditModal();
+                loadMyEntries();
+                loadStats();
+                alert('Entry updated successfully!');
+            } else {
+                showError('editTimeEntryError', data.message || 'Failed to update entry');
+            }
+        } catch (error) {
+            showError('editTimeEntryError', 'An error occurred. Please try again.');
+        }
+    });
+
+    // Modal close buttons
+    document.querySelectorAll('.close').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const modalId = this.dataset.modal;
+            if (modalId) {
+                document.getElementById(modalId).classList.remove('show');
+            }
+        });
+    });
 });
 
 function switchTab(tabName) {
@@ -212,7 +268,10 @@ function renderEntries(entries) {
             </td>
             <td>${escapeHtml(entry.notes || '-')}</td>
             <td>
-                ${!entry.is_paid ? `<button class="btn btn-sm btn-danger" onclick="deleteEntry(${entry.id})">Delete</button>` : '-'}
+                ${!entry.is_paid ? `
+                    <button class="btn btn-sm btn-primary" onclick="editEntry(${entry.id}, ${entry.teacher_id || 0}, '${entry.work_date}', '${entry.start_time}', '${entry.end_time}', '${escapeHtml(entry.notes || '')}')">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteEntry(${entry.id})">Delete</button>
+                ` : '-'}
             </td>
         `;
         tbody.appendChild(row);
@@ -255,6 +314,102 @@ async function loadProfile() {
     } catch (error) {
         console.error('Error loading profile:', error);
     }
+}
+
+async function editEntry(entryId, teacherId, workDate, startTime, endTime, notes) {
+    // Populate the edit form
+    document.getElementById('editEntryId').value = entryId;
+    document.getElementById('editWorkDate').value = workDate;
+    document.getElementById('editStartTime').value = startTime;
+    document.getElementById('editEndTime').value = endTime;
+    document.getElementById('editWorkNotes').value = notes || '';
+
+    // Load teachers for dropdown
+    try {
+        const response = await fetch('/api/teachers.php?action=list');
+        const data = await response.json();
+
+        if (data.success) {
+            const select = document.getElementById('editTeacherSelect');
+            select.innerHTML = '<option value="">-- Select Teacher --</option>';
+            data.teachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher.id;
+                option.textContent = teacher.name;
+                if (teacher.id == teacherId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading teachers:', error);
+    }
+
+    // Calculate hours and show modal
+    setTimeout(() => calculateEditHours(), 100);
+    showEditModal();
+}
+
+function showEditModal() {
+    document.getElementById('editTimeEntryModal').classList.add('show');
+}
+
+function hideEditModal() {
+    document.getElementById('editTimeEntryModal').classList.remove('show');
+}
+
+function calculateEditHours() {
+    const startTime = document.getElementById('editStartTime').value;
+    const endTime = document.getElementById('editEndTime').value;
+    const display = document.getElementById('editCalculatedHours');
+
+    if (!startTime || !endTime) {
+        display.textContent = 'Select start and end times';
+        return;
+    }
+
+    // Parse times
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+
+    // Convert to minutes since midnight
+    let startMinutes = startHour * 60 + startMin;
+    let endMinutes = endHour * 60 + endMin;
+
+    // Handle overnight shifts
+    if (endMinutes < startMinutes) {
+        endMinutes += 24 * 60; // Add 24 hours
+    }
+
+    // Calculate difference in minutes
+    const diffMinutes = endMinutes - startMinutes;
+
+    if (diffMinutes <= 0) {
+        display.textContent = 'End time must be after start time';
+        display.style.color = '#dc2626';
+        return;
+    }
+
+    // Convert to hours
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+
+    // Display
+    let text = '';
+    if (hours > 0) {
+        text += `${hours} hour${hours !== 1 ? 's' : ''}`;
+    }
+    if (minutes > 0) {
+        if (hours > 0) text += ' ';
+        text += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    }
+
+    const decimal = (diffMinutes / 60).toFixed(2);
+    text += ` (${decimal} hours)`;
+
+    display.textContent = text;
+    display.style.color = '#0369a1';
 }
 
 // Utility functions

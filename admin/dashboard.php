@@ -344,6 +344,51 @@ $user = $auth->getCurrentUser();
         </div>
     </div>
 
+    <!-- Edit Time Entry Modal (Admin) -->
+    <div id="editTimeEntryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="editTimeEntryModal">&times;</span>
+            <h3>Edit Time Entry</h3>
+            <form id="editTimeEntryForm">
+                <input type="hidden" id="editEntryId">
+                <div class="form-group">
+                    <label for="editEntrySubstitute">Substitute</label>
+                    <input type="text" id="editEntrySubstitute" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="editEntryTeacher">Teacher</label>
+                    <select id="editEntryTeacher" required>
+                        <option value="">-- Select Teacher --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editEntryDate">Date</label>
+                    <input type="date" id="editEntryDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEntryStartTime">Start Time</label>
+                    <input type="time" id="editEntryStartTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEntryEndTime">End Time</label>
+                    <input type="time" id="editEntryEndTime" required>
+                </div>
+                <div class="form-group">
+                    <label>Calculated Hours</label>
+                    <div id="editEntryCalculatedHours" style="padding: 10px; background: #f0f9ff; border-radius: 6px; font-weight: 500; color: #0369a1;">
+                        Select start and end times
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editEntryNotes">Notes (Optional)</label>
+                    <textarea id="editEntryNotes" rows="3"></textarea>
+                </div>
+                <div class="form-error" id="editTimeEntryError"></div>
+                <button type="submit" class="btn btn-primary">Update Entry</button>
+            </form>
+        </div>
+    </div>
+
     <script src="../assets/js/admin.js"></script>
 </body>
 </html>

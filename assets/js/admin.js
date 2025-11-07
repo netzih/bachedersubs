@@ -202,6 +202,51 @@ function setupEventListeners() {
     // Generate report
     document.getElementById('generateReport').addEventListener('click', generateReport);
 
+    // Edit time entry (admin)
+    const editEntryStartTime = document.getElementById('editEntryStartTime');
+    const editEntryEndTime = document.getElementById('editEntryEndTime');
+    if (editEntryStartTime && editEntryEndTime) {
+        editEntryStartTime.addEventListener('change', calculateEditEntryHours);
+        editEntryEndTime.addEventListener('change', calculateEditEntryHours);
+    }
+
+    document.getElementById('editTimeEntryForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const entryId = document.getElementById('editEntryId').value;
+        const teacherId = document.getElementById('editEntryTeacher').value;
+        const workDate = document.getElementById('editEntryDate').value;
+        const startTime = document.getElementById('editEntryStartTime').value;
+        const endTime = document.getElementById('editEntryEndTime').value;
+        const notes = document.getElementById('editEntryNotes').value;
+
+        try {
+            const response = await fetch('/api/time_entries.php?action=update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    entry_id: entryId,
+                    teacher_id: teacherId,
+                    work_date: workDate,
+                    start_time: startTime,
+                    end_time: endTime,
+                    notes: notes
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                hideModal('editTimeEntryModal');
+                loadTimeEntries();
+                loadStats();
+                alert('Entry updated successfully!');
+            } else {
+                showError('editTimeEntryError', data.message);
+            }
+        } catch (error) {
+            showError('editTimeEntryError', 'An error occurred');
+        }
+    });
+
     // Modal close buttons
     document.querySelectorAll('.close').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -322,6 +367,7 @@ function renderTimeEntries(entries) {
             </td>
             <td>${escapeHtml(entry.notes || '-')}</td>
             <td>
+                <button class="btn btn-sm btn-primary" onclick="editTimeEntry(${entry.id}, '${escapeHtml(entry.substitute_name)}', ${entry.teacher_id}, '${entry.work_date}', '${entry.start_time}', '${entry.end_time}', '${escapeHtml(entry.notes || '')}')">Edit</button>
                 <button class="btn btn-sm ${entry.is_paid ? 'btn-secondary' : 'btn-success'}"
                         onclick="togglePaid(${entry.id}, ${!entry.is_paid})">
                     ${entry.is_paid ? 'Mark Unpaid' : 'Mark Paid'}
@@ -773,6 +819,95 @@ async function viewSubstituteDetails(substituteId) {
         console.error('Error loading substitute details:', error);
         alert('An error occurred while loading substitute details');
     }
+}
+
+async function editTimeEntry(entryId, substituteName, teacherId, workDate, startTime, endTime, notes) {
+    // Populate the edit form
+    document.getElementById('editEntryId').value = entryId;
+    document.getElementById('editEntrySubstitute').value = substituteName;
+    document.getElementById('editEntryDate').value = workDate;
+    document.getElementById('editEntryStartTime').value = startTime;
+    document.getElementById('editEntryEndTime').value = endTime;
+    document.getElementById('editEntryNotes').value = notes || '';
+
+    // Load teachers for dropdown
+    try {
+        const response = await fetch('/api/teachers.php?action=list');
+        const data = await response.json();
+
+        if (data.success) {
+            const select = document.getElementById('editEntryTeacher');
+            select.innerHTML = '<option value="">-- Select Teacher --</option>';
+            data.teachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher.id;
+                option.textContent = teacher.name;
+                if (teacher.id == teacherId) {
+                    option.selected = true;
+                }
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error loading teachers:', error);
+    }
+
+    // Calculate hours and show modal
+    setTimeout(() => calculateEditEntryHours(), 100);
+    showModal('editTimeEntryModal');
+}
+
+function calculateEditEntryHours() {
+    const startTime = document.getElementById('editEntryStartTime').value;
+    const endTime = document.getElementById('editEntryEndTime').value;
+    const display = document.getElementById('editEntryCalculatedHours');
+
+    if (!startTime || !endTime) {
+        display.textContent = 'Select start and end times';
+        return;
+    }
+
+    // Parse times
+    const [startHour, startMin] = startTime.split(':').map(Number);
+    const [endHour, endMin] = endTime.split(':').map(Number);
+
+    // Convert to minutes since midnight
+    let startMinutes = startHour * 60 + startMin;
+    let endMinutes = endHour * 60 + endMin;
+
+    // Handle overnight shifts
+    if (endMinutes < startMinutes) {
+        endMinutes += 24 * 60; // Add 24 hours
+    }
+
+    // Calculate difference in minutes
+    const diffMinutes = endMinutes - startMinutes;
+
+    if (diffMinutes <= 0) {
+        display.textContent = 'End time must be after start time';
+        display.style.color = '#dc2626';
+        return;
+    }
+
+    // Convert to hours
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+
+    // Display
+    let text = '';
+    if (hours > 0) {
+        text += `${hours} hour${hours !== 1 ? 's' : ''}`;
+    }
+    if (minutes > 0) {
+        if (hours > 0) text += ' ';
+        text += `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    }
+
+    const decimal = (diffMinutes / 60).toFixed(2);
+    text += ` (${decimal} hours)`;
+
+    display.textContent = text;
+    display.style.color = '#0369a1';
 }
 
 // Utility functions

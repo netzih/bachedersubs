@@ -164,6 +164,47 @@ $user = $auth->getCurrentUser();
         </div>
     </div>
 
+    <!-- Edit Time Entry Modal -->
+    <div id="editTimeEntryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" data-modal="editTimeEntryModal">&times;</span>
+            <h3>Edit Time Entry</h3>
+            <form id="editTimeEntryForm">
+                <input type="hidden" id="editEntryId">
+                <div class="form-group">
+                    <label for="editTeacherSelect">Teacher</label>
+                    <select id="editTeacherSelect" required>
+                        <option value="">-- Select Teacher --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editWorkDate">Date</label>
+                    <input type="date" id="editWorkDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="editStartTime">Start Time</label>
+                    <input type="time" id="editStartTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEndTime">End Time</label>
+                    <input type="time" id="editEndTime" required>
+                </div>
+                <div class="form-group">
+                    <label>Calculated Hours</label>
+                    <div id="editCalculatedHours" style="padding: 10px; background: #f0f9ff; border-radius: 6px; font-weight: 500; color: #0369a1;">
+                        Select start and end times
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editWorkNotes">Notes (Optional)</label>
+                    <textarea id="editWorkNotes" rows="3"></textarea>
+                </div>
+                <div class="form-error" id="editTimeEntryError"></div>
+                <button type="submit" class="btn btn-primary">Update Entry</button>
+            </form>
+        </div>
+    </div>
+
     <script src="../assets/js/substitute.js"></script>
 </body>
 </html>

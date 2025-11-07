@@ -158,6 +158,94 @@ try {
             sendJson(['success' => true, 'id' => $entryId, 'message' => 'Time entry created successfully']);
             break;
 
+        case 'update':
+            // Admin can edit any entry, substitutes can only edit their own unpaid entries
+            if (!$auth->isLoggedIn()) {
+                sendJson(['success' => false, 'message' => 'Unauthorized'], 401);
+            }
+
+            if ($method !== 'POST') {
+                sendJson(['success' => false, 'message' => 'Method not allowed'], 405);
+            }
+
+            $data = getJsonInput();
+            $entryId = intval($data['entry_id'] ?? 0);
+            $teacherId = intval($data['teacher_id'] ?? 0);
+            $workDate = $data['work_date'] ?? '';
+            $startTime = $data['start_time'] ?? '';
+            $endTime = $data['end_time'] ?? '';
+            $notes = sanitize($data['notes'] ?? '');
+
+            // Validate inputs
+            if ($entryId <= 0 || $teacherId <= 0 || empty($workDate) || empty($startTime) || empty($endTime)) {
+                sendJson(['success' => false, 'message' => 'All fields are required']);
+            }
+
+            if (!isValidDate($workDate)) {
+                sendJson(['success' => false, 'message' => 'Invalid date format']);
+            }
+
+            // Validate time format (HH:MM)
+            if (!preg_match('/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/', $startTime) ||
+                !preg_match('/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/', $endTime)) {
+                sendJson(['success' => false, 'message' => 'Invalid time format. Use HH:MM']);
+            }
+
+            // Calculate hours from start and end time
+            $start = new DateTime($startTime);
+            $end = new DateTime($endTime);
+
+            // If end time is before start time, it means it crosses midnight
+            if ($end < $start) {
+                $end->modify('+1 day');
+            }
+
+            $interval = $start->diff($end);
+            $hours = $interval->h + ($interval->i / 60);
+            $hours = round($hours, 2);
+
+            if ($hours <= 0) {
+                sendJson(['success' => false, 'message' => 'End time must be after start time']);
+            }
+
+            $userId = $auth->getUserId();
+            $isAdmin = $auth->isAdmin();
+
+            // Check permissions and get entry
+            $stmt = $db->prepare("
+                SELECT te.*, s.user_id as substitute_user_id
+                FROM time_entries te
+                JOIN substitutes s ON te.substitute_id = s.id
+                WHERE te.id = ?
+            ");
+            $stmt->execute([$entryId]);
+            $entry = $stmt->fetch();
+
+            if (!$entry) {
+                sendJson(['success' => false, 'message' => 'Entry not found']);
+            }
+
+            // If not admin, check ownership and paid status
+            if (!$isAdmin) {
+                if ($entry['substitute_user_id'] != $userId) {
+                    sendJson(['success' => false, 'message' => 'Unauthorized to edit this entry'], 403);
+                }
+                if ($entry['is_paid']) {
+                    sendJson(['success' => false, 'message' => 'Cannot edit paid entries'], 403);
+                }
+            }
+
+            // Update time entry
+            $stmt = $db->prepare("
+                UPDATE time_entries
+                SET teacher_id = ?, work_date = ?, start_time = ?, end_time = ?, hours = ?, notes = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([$teacherId, $workDate, $startTime, $endTime, $hours, $notes, $entryId]);
+
+            sendJson(['success' => true, 'message' => 'Entry updated successfully']);
+            break;
+
         case 'list':
             // List entries for current user (substitute) or all (admin)
             if (!$auth->isLoggedIn()) {
