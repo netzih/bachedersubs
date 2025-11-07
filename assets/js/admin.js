@@ -460,19 +460,21 @@ function renderSubstitutes(substitutes) {
         tbody.appendChild(row);
 
         // Load owed amount for this substitute
-        loadSubstituteOwed(sub.id);
+        loadSubstituteOwed(sub.id, sub.name);
     });
 }
 
-async function loadSubstituteOwed(substituteId) {
+async function loadSubstituteOwed(substituteId, substituteName) {
     try {
-        // This is a workaround - we'll get all entries and calculate
+        // Get all unpaid entries and filter by substitute name
         const response = await fetch(`/api/time_entries.php?action=list&is_paid=false`);
         const data = await response.json();
 
         if (data.success) {
-            const subEntries = data.entries.filter(e => e.substitute_name);
-            // Group by substitute and calculate
+            // Filter entries for this specific substitute
+            const subEntries = data.entries.filter(e => e.substitute_name === substituteName);
+
+            // Calculate total owed for this substitute
             let owed = 0;
             subEntries.forEach(entry => {
                 owed += parseFloat(entry.amount || 0);
@@ -480,13 +482,15 @@ async function loadSubstituteOwed(substituteId) {
 
             const cell = document.getElementById(`owed-${substituteId}`);
             if (cell) {
-                // Find entries for this specific substitute
-                // Since we don't have substitute_id in the response, we'll just show total for now
-                cell.textContent = formatCurrency(0); // Will be updated when we fix the API
+                cell.textContent = formatCurrency(owed);
             }
         }
     } catch (error) {
         console.error('Error loading owed amount:', error);
+        const cell = document.getElementById(`owed-${substituteId}`);
+        if (cell) {
+            cell.textContent = '$0.00';
+        }
     }
 }
 
