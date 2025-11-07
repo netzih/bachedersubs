@@ -317,6 +317,8 @@ try {
                     SUM(te.hours * s.hourly_rate) as total_amount,
                     SUM(CASE WHEN te.is_paid = 1 THEN te.hours * s.hourly_rate ELSE 0 END) as paid_amount,
                     SUM(CASE WHEN te.is_paid = 0 THEN te.hours * s.hourly_rate ELSE 0 END) as unpaid_amount,
+                    SUM(CASE WHEN te.is_paid = 1 THEN te.hours ELSE 0 END) as paid_hours,
+                    SUM(CASE WHEN te.is_paid = 0 THEN te.hours ELSE 0 END) as unpaid_hours,
                     COUNT(CASE WHEN te.is_paid = 0 THEN 1 END) as unpaid_entries
                 FROM time_entries te
                 JOIN substitutes s ON te.substitute_id = s.id

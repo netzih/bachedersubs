@@ -138,10 +138,10 @@ async function loadStats() {
 
         if (data.success) {
             const stats = data.stats;
-            document.getElementById('totalOwed').textContent = formatCurrency(stats.unpaid_amount || 0);
-            document.getElementById('unpaidHours').textContent = parseFloat(stats.total_hours || 0).toFixed(1);
+            document.getElementById('totalOwed').textContent = parseFloat(stats.unpaid_hours || 0).toFixed(1);
+            document.getElementById('totalPaid').textContent = parseFloat(stats.paid_hours || 0).toFixed(1);
             document.getElementById('totalHours').textContent = parseFloat(stats.total_hours || 0).toFixed(1);
-            document.getElementById('totalPaid').textContent = formatCurrency(stats.paid_amount || 0);
+            document.getElementById('totalEntries').textContent = stats.total_entries || 0;
         }
     } catch (error) {
         console.error('Error loading stats:', error);

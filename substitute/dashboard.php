@@ -40,20 +40,20 @@ $user = $auth->getCurrentUser();
         <!-- Dashboard Stats -->
         <div class="dashboard-stats">
             <div class="stat-card">
-                <h3>Total Owed</h3>
-                <p class="stat-value" id="totalOwed">$0.00</p>
+                <h3>Hours Owed</h3>
+                <p class="stat-value" id="totalOwed">0</p>
             </div>
             <div class="stat-card">
-                <h3>Unpaid Hours</h3>
-                <p class="stat-value" id="unpaidHours">0</p>
+                <h3>Hours Paid</h3>
+                <p class="stat-value" id="totalPaid">0</p>
             </div>
             <div class="stat-card">
                 <h3>Total Hours Worked</h3>
                 <p class="stat-value" id="totalHours">0</p>
             </div>
             <div class="stat-card">
-                <h3>Total Paid</h3>
-                <p class="stat-value" id="totalPaid">$0.00</p>
+                <h3>Total Entries</h3>
+                <p class="stat-value" id="totalEntries">0</p>
             </div>
         </div>
 
