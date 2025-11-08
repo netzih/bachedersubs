@@ -9,7 +9,6 @@ require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 require_once '../includes/EmailSettings.php';
 require_once '../includes/EmailService.php';
-require_once '../includes/TimeEntry.php';
 
 header('Content-Type: application/json');
 
