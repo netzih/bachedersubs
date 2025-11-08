@@ -47,10 +47,10 @@ class EmailSettings {
     private function createSettings($data) {
         $sql = "INSERT INTO email_settings (
             smtp_host, smtp_port, smtp_username, smtp_password, smtp_encryption,
-            recipient_email, send_weekly_report, report_day, report_time, report_timezone
+            from_email, from_name, recipient_email, send_weekly_report, report_day, report_time, report_timezone
         ) VALUES (
             :smtp_host, :smtp_port, :smtp_username, :smtp_password, :smtp_encryption,
-            :recipient_email, :send_weekly_report, :report_day, :report_time, :report_timezone
+            :from_email, :from_name, :recipient_email, :send_weekly_report, :report_day, :report_time, :report_timezone
         )";
 
         $stmt = $this->db->prepare($sql);
@@ -60,6 +60,8 @@ class EmailSettings {
             'smtp_username' => $data['smtp_username'] ?? null,
             'smtp_password' => $data['smtp_password'] ?? null,
             'smtp_encryption' => $data['smtp_encryption'] ?? 'tls',
+            'from_email' => $data['from_email'] ?? null,
+            'from_name' => $data['from_name'] ?? null,
             'recipient_email' => $data['recipient_email'],
             'send_weekly_report' => $data['send_weekly_report'] ?? true,
             'report_day' => $data['report_day'] ?? 'Friday',
@@ -78,8 +80,8 @@ class EmailSettings {
 
         $allowedFields = [
             'smtp_host', 'smtp_port', 'smtp_username', 'smtp_encryption',
-            'recipient_email', 'send_weekly_report', 'report_day',
-            'report_time', 'report_timezone'
+            'from_email', 'from_name', 'recipient_email', 'send_weekly_report',
+            'report_day', 'report_time', 'report_timezone'
         ];
 
         foreach ($allowedFields as $field) {

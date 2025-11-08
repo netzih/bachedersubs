@@ -986,6 +986,8 @@ async function loadEmailSettings() {
             document.getElementById('smtpEncryption').value = s.smtp_encryption || 'tls';
             document.getElementById('smtpUsername').value = s.smtp_username || '';
             document.getElementById('smtpPassword').value = ''; // Never populate password
+            document.getElementById('fromEmail').value = s.from_email || '';
+            document.getElementById('fromName').value = s.from_name || '';
             document.getElementById('recipientEmail').value = s.recipient_email || '';
             document.getElementById('reportDay').value = s.report_day || 'Friday';
             document.getElementById('reportTime').value = s.report_time || '15:00';
@@ -1011,6 +1013,8 @@ document.getElementById('emailSettingsForm')?.addEventListener('submit', async (
         smtp_encryption: document.getElementById('smtpEncryption').value,
         smtp_username: document.getElementById('smtpUsername').value || null,
         smtp_password: document.getElementById('smtpPassword').value || null,
+        from_email: document.getElementById('fromEmail').value || null,
+        from_name: document.getElementById('fromName').value || null,
         recipient_email: document.getElementById('recipientEmail').value,
         report_day: document.getElementById('reportDay').value,
         report_time: document.getElementById('reportTime').value,

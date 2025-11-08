@@ -439,6 +439,20 @@ $user = $auth->getCurrentUser();
                     <small>Leave blank if using IP authentication or to keep existing password</small>
                 </div>
 
+                <h4 style="margin: 25px 0 15px; color: var(--primary-color);">Sender Configuration</h4>
+
+                <div class="form-group">
+                    <label for="fromEmail">From Email</label>
+                    <input type="email" id="fromEmail" placeholder="noreply@bayareacheder.org">
+                    <small>Leave blank to auto-generate from domain (noreply@bayareacheder.org)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="fromName">From Name</label>
+                    <input type="text" id="fromName" placeholder="Bay Area Cheder">
+                    <small>Leave blank to use site name</small>
+                </div>
+
                 <h4 style="margin: 25px 0 15px; color: var(--primary-color);">Email Configuration</h4>
 
                 <div class="form-group">

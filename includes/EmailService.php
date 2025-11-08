@@ -98,17 +98,23 @@ class EmailService {
             }
 
             // Send email
-            $domain = parse_url(SITE_URL, PHP_URL_HOST) ?: 'localhost';
-            // Extract root domain (remove subdomain)
-            $domainParts = explode('.', $domain);
-            if (count($domainParts) > 2) {
-                // Take last 2 parts for root domain (e.g., bayareacheder.org from subs.bayareacheder.org)
-                $rootDomain = $domainParts[count($domainParts) - 2] . '.' . $domainParts[count($domainParts) - 1];
+            // Use configured from_email or fall back to auto-generated
+            if (!empty($this->settings['from_email'])) {
+                $from = $this->settings['from_email'];
             } else {
-                $rootDomain = $domain;
+                $domain = parse_url(SITE_URL, PHP_URL_HOST) ?: 'localhost';
+                // Extract root domain (remove subdomain)
+                $domainParts = explode('.', $domain);
+                if (count($domainParts) > 2) {
+                    // Take last 2 parts for root domain (e.g., bayareacheder.org from subs.bayareacheder.org)
+                    $rootDomain = $domainParts[count($domainParts) - 2] . '.' . $domainParts[count($domainParts) - 1];
+                } else {
+                    $rootDomain = $domain;
+                }
+                $from = $this->settings['smtp_username'] ?: 'noreply@' . $rootDomain;
             }
-            $from = $this->settings['smtp_username'] ?: 'noreply@' . $rootDomain;
-            $fromName = SITE_NAME;
+
+            $fromName = !empty($this->settings['from_name']) ? $this->settings['from_name'] : SITE_NAME;
 
             $this->sendCommand("MAIL FROM: <{$from}>");
             $this->sendCommand("RCPT TO: <{$to}>");
