@@ -158,6 +158,7 @@ $user = $auth->getCurrentUser();
         <div id="reportsTab" class="tab-content">
             <div class="section-header">
                 <h2>Reports</h2>
+                <button id="emailSettingsBtn" class="btn btn-secondary">📧 Email Settings</button>
             </div>
 
             <div class="report-filters">
@@ -387,6 +388,118 @@ $user = $auth->getCurrentUser();
                 </div>
                 <div class="form-error" id="editTimeEntryError"></div>
                 <button type="submit" class="btn btn-primary">Update Entry</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Email Settings Modal -->
+    <div id="emailSettingsModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="close" data-modal="emailSettingsModal">&times;</span>
+            <h3>📧 Email & SMTP Settings</h3>
+            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                Configure SMTP settings for weekly email reports sent every Friday at 3 PM Pacific Time.
+            </p>
+
+            <form id="emailSettingsForm">
+                <h4 style="margin-bottom: 15px; color: var(--primary-color);">SMTP Configuration</h4>
+
+                <div class="form-group">
+                    <label for="smtpHost">SMTP Host *</label>
+                    <input type="text" id="smtpHost" placeholder="smtp.gmail.com" required>
+                    <small>Gmail SMTP relay: smtp.gmail.com</small>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="smtpPort">SMTP Port *</label>
+                        <input type="number" id="smtpPort" value="587" required>
+                        <small>TLS: 587, SSL: 465</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="smtpEncryption">Encryption *</label>
+                        <select id="smtpEncryption" required>
+                            <option value="tls">TLS</option>
+                            <option value="ssl">SSL</option>
+                            <option value="none">None</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="smtpUsername">SMTP Username</label>
+                    <input type="text" id="smtpUsername" placeholder="Optional (for authentication)">
+                    <small>Leave blank if using IP authentication</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="smtpPassword">SMTP Password</label>
+                    <input type="password" id="smtpPassword" placeholder="Optional (for authentication)">
+                    <small>Leave blank if using IP authentication or to keep existing password</small>
+                </div>
+
+                <h4 style="margin: 25px 0 15px; color: var(--primary-color);">Email Configuration</h4>
+
+                <div class="form-group">
+                    <label for="recipientEmail">Recipient Email *</label>
+                    <input type="email" id="recipientEmail" placeholder="admin@example.com" required>
+                    <small>Where to send the weekly reports</small>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="reportDay">Report Day</label>
+                        <select id="reportDay">
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday" selected>Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reportTime">Report Time (Pacific)</label>
+                        <input type="time" id="reportTime" value="15:00">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="sendWeeklyReport" checked>
+                        Enable weekly email reports
+                    </label>
+                </div>
+
+                <!-- SMTP Test Section -->
+                <div style="background: var(--bg-color); padding: 20px; border-radius: var(--radius); margin: 20px 0;">
+                    <h4 style="margin: 0 0 10px; color: var(--primary-color);">Test SMTP Connection</h4>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">
+                        Test your SMTP configuration before saving. This will connect to the server and verify authentication.
+                    </p>
+                    <button type="button" id="testSmtpBtn" class="btn btn-secondary">🔍 Test Connection</button>
+                    <button type="button" id="sendTestReportBtn" class="btn btn-secondary" style="margin-left: 10px;">📨 Send Test Report</button>
+                </div>
+
+                <!-- SMTP Log -->
+                <div id="smtpLogContainer" style="display: none; background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: var(--radius); margin: 15px 0; max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong style="color: #60a5fa;">SMTP Debug Log:</strong>
+                        <button type="button" id="clearLogBtn" style="background: #475569; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">Clear</button>
+                    </div>
+                    <div id="smtpLog"></div>
+                </div>
+
+                <div class="form-error" id="emailSettingsError"></div>
+                <div class="form-success" id="emailSettingsSuccess"></div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+                    <button type="button" class="btn btn-secondary" data-modal="emailSettingsModal">Cancel</button>
+                </div>
             </form>
         </div>
     </div>

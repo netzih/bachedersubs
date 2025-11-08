@@ -964,3 +964,207 @@ function formatTime(timeStr) {
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
 }
+
+// ===== Email Settings =====
+
+// Open email settings modal
+document.getElementById('emailSettingsBtn')?.addEventListener('click', () => {
+    showModal('emailSettingsModal');
+    loadEmailSettings();
+});
+
+// Load email settings
+async function loadEmailSettings() {
+    try {
+        const response = await fetch('../api/email-settings.php');
+        const data = await response.json();
+
+        if (data.success && data.settings) {
+            const s = data.settings;
+            document.getElementById('smtpHost').value = s.smtp_host || '';
+            document.getElementById('smtpPort').value = s.smtp_port || '587';
+            document.getElementById('smtpEncryption').value = s.smtp_encryption || 'tls';
+            document.getElementById('smtpUsername').value = s.smtp_username || '';
+            document.getElementById('smtpPassword').value = ''; // Never populate password
+            document.getElementById('recipientEmail').value = s.recipient_email || '';
+            document.getElementById('reportDay').value = s.report_day || 'Friday';
+            document.getElementById('reportTime').value = s.report_time || '15:00';
+            document.getElementById('sendWeeklyReport').checked = s.send_weekly_report !== 0;
+        }
+    } catch (error) {
+        console.error('Failed to load email settings:', error);
+    }
+}
+
+// Save email settings
+document.getElementById('emailSettingsForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const errorDiv = document.getElementById('emailSettingsError');
+    const successDiv = document.getElementById('emailSettingsSuccess');
+    errorDiv.classList.remove('show');
+    successDiv.classList.remove('show');
+
+    const data = {
+        smtp_host: document.getElementById('smtpHost').value,
+        smtp_port: parseInt(document.getElementById('smtpPort').value),
+        smtp_encryption: document.getElementById('smtpEncryption').value,
+        smtp_username: document.getElementById('smtpUsername').value || null,
+        smtp_password: document.getElementById('smtpPassword').value || null,
+        recipient_email: document.getElementById('recipientEmail').value,
+        report_day: document.getElementById('reportDay').value,
+        report_time: document.getElementById('reportTime').value,
+        send_weekly_report: document.getElementById('sendWeeklyReport').checked
+    };
+
+    try {
+        const response = await fetch('../api/email-settings.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            successDiv.textContent = result.message || 'Email settings saved successfully!';
+            successDiv.classList.add('show');
+            setTimeout(() => {
+                hideModal('emailSettingsModal');
+            }, 2000);
+        } else {
+            errorDiv.textContent = result.message || 'Failed to save email settings';
+            errorDiv.classList.add('show');
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Network error: ' + error.message;
+        errorDiv.classList.add('show');
+    }
+});
+
+// Test SMTP connection
+document.getElementById('testSmtpBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('testSmtpBtn');
+    const errorDiv = document.getElementById('emailSettingsError');
+    const successDiv = document.getElementById('emailSettingsSuccess');
+    const logContainer = document.getElementById('smtpLogContainer');
+    const logDiv = document.getElementById('smtpLog');
+
+    errorDiv.classList.remove('show');
+    successDiv.classList.remove('show');
+
+    // Get current form values
+    const data = {
+        smtp_host: document.getElementById('smtpHost').value,
+        smtp_port: parseInt(document.getElementById('smtpPort').value),
+        smtp_encryption: document.getElementById('smtpEncryption').value,
+        smtp_username: document.getElementById('smtpUsername').value || null,
+        smtp_password: document.getElementById('smtpPassword').value || null,
+        recipient_email: document.getElementById('recipientEmail').value
+    };
+
+    btn.disabled = true;
+    btn.textContent = '🔄 Testing...';
+    logContainer.style.display = 'block';
+    logDiv.innerHTML = '<div style="color: #94a3b8;">Connecting to SMTP server...</div>';
+
+    try {
+        const response = await fetch('../api/test-smtp.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        // Display log
+        if (result.log && result.log.length > 0) {
+            logDiv.innerHTML = result.log.map(line => {
+                let color = '#e2e8f0';
+                if (line.includes('✓')) color = '#4ade80';
+                else if (line.includes('Error') || line.includes('Failed')) color = '#f87171';
+                else if (line.startsWith('→')) color = '#60a5fa';
+                else if (line.startsWith('←')) color = '#a78bfa';
+                return `<div style="color: ${color}; margin: 3px 0;">${escapeHtml(line)}</div>`;
+            }).join('');
+        }
+
+        if (result.success) {
+            successDiv.textContent = '✓ SMTP connection successful!';
+            successDiv.classList.add('show');
+        } else {
+            errorDiv.textContent = '✗ Connection failed: ' + result.message;
+            errorDiv.classList.add('show');
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Network error: ' + error.message;
+        errorDiv.classList.add('show');
+        logDiv.innerHTML += `<div style="color: #f87171;">Network error: ${escapeHtml(error.message)}</div>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 Test Connection';
+    }
+});
+
+// Send test report
+document.getElementById('sendTestReportBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('sendTestReportBtn');
+    const errorDiv = document.getElementById('emailSettingsError');
+    const successDiv = document.getElementById('emailSettingsSuccess');
+    const logContainer = document.getElementById('smtpLogContainer');
+    const logDiv = document.getElementById('smtpLog');
+
+    errorDiv.classList.remove('show');
+    successDiv.classList.remove('show');
+
+    if (!confirm('This will send a test weekly report email with the current week\'s data. Continue?')) {
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '📤 Sending...';
+    logContainer.style.display = 'block';
+    logDiv.innerHTML = '<div style="color: #94a3b8;">Preparing and sending test email...</div>';
+
+    try {
+        const response = await fetch('../api/send-weekly-report.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const result = await response.json();
+
+        // Display log
+        if (result.log && result.log.length > 0) {
+            logDiv.innerHTML = result.log.map(line => {
+                let color = '#e2e8f0';
+                if (line.includes('✓')) color = '#4ade80';
+                else if (line.includes('Error') || line.includes('Failed')) color = '#f87171';
+                else if (line.startsWith('→')) color = '#60a5fa';
+                else if (line.startsWith('←')) color = '#a78bfa';
+                return `<div style="color: ${color}; margin: 3px 0;">${escapeHtml(line)}</div>`;
+            }).join('');
+        }
+
+        if (result.success) {
+            successDiv.textContent = '✓ Test email sent successfully!';
+            successDiv.classList.add('show');
+        } else {
+            errorDiv.textContent = '✗ Failed to send email: ' + result.message;
+            errorDiv.classList.add('show');
+        }
+    } catch (error) {
+        errorDiv.textContent = 'Network error: ' + error.message;
+        errorDiv.classList.add('show');
+        logDiv.innerHTML += `<div style="color: #f87171;">Network error: ${escapeHtml(error.message)}</div>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📨 Send Test Report';
+    }
+});
+
+// Clear SMTP log
+document.getElementById('clearLogBtn')?.addEventListener('click', () => {
+    document.getElementById('smtpLog').innerHTML = '';
+    document.getElementById('smtpLogContainer').style.display = 'none';
+});
