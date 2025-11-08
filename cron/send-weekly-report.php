@@ -63,9 +63,11 @@ try {
         exit(0);
     }
 
-    // Calculate date range (current week: Monday to Sunday)
-    $startDate = date('Y-m-d', strtotime('monday this week'));
-    $endDate = date('Y-m-d', strtotime('sunday this week'));
+    // Calculate date range (current week: Sunday to Saturday)
+    $today = strtotime('today');
+    $dayOfWeek = date('w', $today); // 0 (Sunday) through 6 (Saturday)
+    $startDate = date('Y-m-d', strtotime('-' . $dayOfWeek . ' days', $today)); // This week's Sunday
+    $endDate = date('Y-m-d', strtotime('+' . (6 - $dayOfWeek) . ' days', $today)); // This week's Saturday
 
     echo "[" . date('Y-m-d H:i:s') . "] Report period: {$startDate} to {$endDate}\n";
 

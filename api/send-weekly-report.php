@@ -29,9 +29,11 @@ try {
         $startDate = $data['start_date'];
         $endDate = $data['end_date'];
     } else {
-        // Default to current week (Monday to Sunday)
-        $startDate = date('Y-m-d', strtotime('monday this week'));
-        $endDate = date('Y-m-d', strtotime('sunday this week'));
+        // Default to current week (Sunday to Saturday)
+        $today = strtotime('today');
+        $dayOfWeek = date('w', $today); // 0 (Sunday) through 6 (Saturday)
+        $startDate = date('Y-m-d', strtotime('-' . $dayOfWeek . ' days', $today)); // This week's Sunday
+        $endDate = date('Y-m-d', strtotime('+' . (6 - $dayOfWeek) . ' days', $today)); // This week's Saturday
     }
 
     // Get report data
