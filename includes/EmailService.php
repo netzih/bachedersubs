@@ -98,7 +98,8 @@ class EmailService {
             }
 
             // Send email
-            $from = $this->settings['smtp_username'] ?: 'noreply@' . SITE_URL;
+            $domain = parse_url(SITE_URL, PHP_URL_HOST) ?: 'localhost';
+            $from = $this->settings['smtp_username'] ?: 'noreply@' . $domain;
             $fromName = SITE_NAME;
 
             $this->sendCommand("MAIL FROM: <{$from}>");
