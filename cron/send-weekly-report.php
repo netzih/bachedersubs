@@ -120,20 +120,21 @@ function generateWeeklyReportData($startDate, $endDate) {
     // Get all time entries for the week
     $sql = "SELECT
                 te.id,
-                te.date,
+                te.work_date as date,
                 te.start_time,
                 te.end_time,
                 te.hours,
-                te.hourly_rate,
-                te.total_amount,
                 te.is_paid,
+                s.hourly_rate,
+                (te.hours * s.hourly_rate) as amount,
                 u.name as substitute_name,
                 t.name as teacher_name
             FROM time_entries te
-            JOIN users u ON te.user_id = u.id
+            JOIN substitutes s ON te.substitute_id = s.id
+            JOIN users u ON s.user_id = u.id
             LEFT JOIN teachers t ON te.teacher_id = t.id
-            WHERE te.date BETWEEN :start_date AND :end_date
-            ORDER BY te.date ASC, te.start_time ASC";
+            WHERE te.work_date BETWEEN :start_date AND :end_date
+            ORDER BY te.work_date ASC, te.start_time ASC";
 
     $stmt = $db->prepare($sql);
     $stmt->execute([
@@ -149,7 +150,7 @@ function generateWeeklyReportData($startDate, $endDate) {
 
     foreach ($entries as $entry) {
         $totalHours += $entry['hours'];
-        $totalAmount += $entry['total_amount'];
+        $totalAmount += $entry['amount'];
 
         $subName = $entry['substitute_name'];
         if (!isset($substituteSummary[$subName])) {
@@ -160,7 +161,7 @@ function generateWeeklyReportData($startDate, $endDate) {
             ];
         }
         $substituteSummary[$subName]['hours'] += $entry['hours'];
-        $substituteSummary[$subName]['amount'] += $entry['total_amount'];
+        $substituteSummary[$subName]['amount'] += $entry['amount'];
     }
 
     // Convert to indexed array
