@@ -51,8 +51,8 @@ try {
     echo "[" . date('Y-m-d H:i:s') . "] Current day: {$currentDay}, Current hour: {$currentHour}\n";
     echo "[" . date('Y-m-d H:i:s') . "] Configured day: {$settings['report_day']}, Configured hour: {$reportHour}\n";
 
-    // If this is being run manually or via different schedule, skip the day/time check
-    // You can comment out these checks if running manually:
+    // COMMENTED OUT FOR MANUAL TESTING - Uncomment these checks for automated cron
+    /*
     if ($currentDay !== $settings['report_day']) {
         echo "[" . date('Y-m-d H:i:s') . "] Not the configured report day ({$settings['report_day']}). Exiting.\n";
         exit(0);
@@ -62,6 +62,9 @@ try {
         echo "[" . date('Y-m-d H:i:s') . "] Not the configured report hour ({$reportHour}:00). Exiting.\n";
         exit(0);
     }
+    */
+
+    echo "[" . date('Y-m-d H:i:s') . "] ⚠️  WARNING: Day/time checks disabled for manual testing\n";
 
     // Calculate date range (current week: Sunday to Saturday)
     $today = strtotime('today');
