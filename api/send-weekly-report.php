@@ -22,16 +22,16 @@ try {
         throw new Exception('Method not allowed');
     }
 
-    // Get date range (default to last week)
+    // Get date range (default to current week)
     $data = json_decode(file_get_contents('php://input'), true);
 
     if (isset($data['start_date']) && isset($data['end_date'])) {
         $startDate = $data['start_date'];
         $endDate = $data['end_date'];
     } else {
-        // Default to last week (Monday to Sunday)
-        $endDate = date('Y-m-d', strtotime('last Sunday'));
-        $startDate = date('Y-m-d', strtotime($endDate . ' -6 days'));
+        // Default to current week (Monday to Sunday)
+        $startDate = date('Y-m-d', strtotime('monday this week'));
+        $endDate = date('Y-m-d', strtotime('sunday this week'));
     }
 
     // Get report data

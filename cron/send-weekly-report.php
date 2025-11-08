@@ -63,9 +63,9 @@ try {
         exit(0);
     }
 
-    // Calculate date range (last week: Monday to Sunday)
-    $endDate = date('Y-m-d', strtotime('last Sunday'));
-    $startDate = date('Y-m-d', strtotime($endDate . ' -6 days'));
+    // Calculate date range (current week: Monday to Sunday)
+    $startDate = date('Y-m-d', strtotime('monday this week'));
+    $endDate = date('Y-m-d', strtotime('sunday this week'));
 
     echo "[" . date('Y-m-d H:i:s') . "] Report period: {$startDate} to {$endDate}\n";
 
