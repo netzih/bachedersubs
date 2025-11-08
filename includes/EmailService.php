@@ -99,7 +99,15 @@ class EmailService {
 
             // Send email
             $domain = parse_url(SITE_URL, PHP_URL_HOST) ?: 'localhost';
-            $from = $this->settings['smtp_username'] ?: 'noreply@' . $domain;
+            // Extract root domain (remove subdomain)
+            $domainParts = explode('.', $domain);
+            if (count($domainParts) > 2) {
+                // Take last 2 parts for root domain (e.g., bayareacheder.org from subs.bayareacheder.org)
+                $rootDomain = $domainParts[count($domainParts) - 2] . '.' . $domainParts[count($domainParts) - 1];
+            } else {
+                $rootDomain = $domain;
+            }
+            $from = $this->settings['smtp_username'] ?: 'noreply@' . $rootDomain;
             $fromName = SITE_NAME;
 
             $this->sendCommand("MAIL FROM: <{$from}>");
