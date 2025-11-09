@@ -102,5 +102,62 @@ document.addEventListener('DOMContentLoaded', function() {
             el.textContent = '';
             el.classList.remove('show');
         });
+        document.querySelectorAll('.form-success').forEach(el => {
+            el.textContent = '';
+            el.classList.remove('show');
+        });
     }
+
+    // Forgot Password Form Toggle
+    const forgotPasswordLink = document.getElementById('showForgotPassword');
+    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+    const showLoginFromForgot = document.getElementById('showLoginFromForgot');
+
+    forgotPasswordLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearErrors();
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'none';
+        forgotPasswordForm.style.display = 'block';
+    });
+
+    showLoginFromForgot.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearErrors();
+        forgotPasswordForm.style.display = 'none';
+        loginForm.style.display = 'block';
+    });
+
+    // Forgot Password Form Submission
+    const forgotPasswordFormElement = document.getElementById('forgotPasswordFormElement');
+    forgotPasswordFormElement.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearErrors();
+
+        const formData = new FormData(forgotPasswordFormElement);
+        const data = Object.fromEntries(formData);
+
+        try {
+            const response = await fetch('api/request-password-reset.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const successEl = document.getElementById('forgotPasswordSuccess');
+                successEl.textContent = result.message;
+                successEl.classList.add('show');
+                forgotPasswordFormElement.reset();
+            } else {
+                showError('forgotPasswordError', result.message || 'Failed to send reset link');
+            }
+        } catch (error) {
+            showError('forgotPasswordError', 'An error occurred. Please try again.');
+        }
+    });
 });

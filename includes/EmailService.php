@@ -429,6 +429,126 @@ class EmailService {
     }
 
     /**
+     * Send password reset email
+     */
+    public function sendPasswordReset($userData, $token) {
+        try {
+            $this->smtpLog = [];
+
+            $resetLink = SITE_URL . '/reset-password.php?token=' . $token;
+            $subject = "Password Reset Request - " . SITE_NAME;
+            $htmlBody = $this->generatePasswordResetHTML($userData, $resetLink);
+            $textBody = $this->generatePasswordResetText($userData, $resetLink);
+
+            // Send email
+            $result = $this->sendEmail(
+                $userData['user_email'],
+                $subject,
+                $htmlBody,
+                $textBody
+            );
+
+            return $result;
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'log' => $this->smtpLog
+            ];
+        }
+    }
+
+    /**
+     * Generate HTML email template for password reset
+     */
+    private function generatePasswordResetHTML($userData, $resetLink) {
+        $name = htmlspecialchars($userData['user_name']);
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #0f172a; background: #f8fafc; margin: 0; padding: 20px; }
+                .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; text-align: center; }
+                .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+                .content { padding: 40px 30px; }
+                .button { display: inline-block; background: #1e40af; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                .button:hover { background: #1e3a8a; }
+                .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }
+                .footer { background: #f8fafc; padding: 20px; text-align: center; font-size: 12px; color: #64748b; }
+                .code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🔐 Password Reset Request</h1>
+                </div>
+
+                <div class="content">
+                    <p>Hello <?php echo $name; ?>,</p>
+
+                    <p>We received a request to reset your password for your <?php echo SITE_NAME; ?> account.</p>
+
+                    <p>Click the button below to reset your password:</p>
+
+                    <div style="text-align: center;">
+                        <a href="<?php echo htmlspecialchars($resetLink); ?>" class="button">Reset Password</a>
+                    </div>
+
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p class="code"><?php echo htmlspecialchars($resetLink); ?></p>
+
+                    <div class="warning">
+                        <strong>⚠️ Important:</strong>
+                        <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                            <li>This link will expire in <strong>1 hour</strong></li>
+                            <li>If you didn't request this reset, you can safely ignore this email</li>
+                            <li>Your password will not change until you click the link above and set a new password</li>
+                        </ul>
+                    </div>
+
+                    <p style="margin-top: 30px; color: #64748b; font-size: 14px;">
+                        If you have any issues, please contact your administrator.
+                    </p>
+                </div>
+
+                <div class="footer">
+                    <p>This is an automated email from <?php echo SITE_NAME; ?></p>
+                    <p>Generated on <?php echo date('F d, Y \a\t g:i A'); ?></p>
+                </div>
+            </div>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Generate plain text version of password reset email
+     */
+    private function generatePasswordResetText($userData, $resetLink) {
+        $output = "PASSWORD RESET REQUEST\n";
+        $output .= str_repeat("=", 50) . "\n\n";
+        $output .= "Hello " . $userData['user_name'] . ",\n\n";
+        $output .= "We received a request to reset your password for your " . SITE_NAME . " account.\n\n";
+        $output .= "Click the link below to reset your password:\n";
+        $output .= $resetLink . "\n\n";
+        $output .= "IMPORTANT:\n";
+        $output .= "- This link will expire in 1 hour\n";
+        $output .= "- If you didn't request this reset, you can safely ignore this email\n";
+        $output .= "- Your password will not change until you click the link and set a new password\n\n";
+        $output .= str_repeat("=", 50) . "\n";
+        $output .= "This is an automated email from " . SITE_NAME . "\n";
+
+        return $output;
+    }
+
+    /**
      * Get SMTP log
      */
     public function getLog() {

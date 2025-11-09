@@ -32,7 +32,28 @@
                     <button type="submit" class="btn btn-primary btn-block">Login</button>
                 </form>
                 <p class="auth-toggle">
-                    Don't have an account? <a href="#" id="showRegister">Register here</a>
+                    Don't have an account? <a href="#" id="showRegister">Register here</a><br>
+                    <a href="#" id="showForgotPassword" style="font-size: 13px;">Forgot your password?</a>
+                </p>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div id="forgotPasswordForm" class="auth-form" style="display: none;">
+                <h3>Reset Password</h3>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                    Enter your email address and we'll send you a link to reset your password.
+                </p>
+                <form id="forgotPasswordFormElement">
+                    <div class="form-group">
+                        <label for="forgotEmail">Email</label>
+                        <input type="email" id="forgotEmail" name="email" required>
+                    </div>
+                    <div class="form-error" id="forgotPasswordError"></div>
+                    <div class="form-success" id="forgotPasswordSuccess"></div>
+                    <button type="submit" class="btn btn-primary btn-block">Send Reset Link</button>
+                </form>
+                <p class="auth-toggle">
+                    Remember your password? <a href="#" id="showLoginFromForgot">Login here</a>
                 </p>
             </div>
 
